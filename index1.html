@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>การแจ้งเรื่องร้องเรียน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Sarabun', sans-serif;
+        }
+        
+        .banner {
+            background-color: #511C10;
+        }
+        
+        .btn-primary {
+            background-color: #240C06;
+            color: #FFFFFF;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-step {
+            display: none;
+        }
+        
+        .form-step.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .success-message {
+            display: none;
+            animation: slideIn 0.5s ease-in-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: #511C10;
+            transition: width 0.5s ease;
+        }
+        
+        .form-input:focus {
+            border-color: #511C10;
+            box-shadow: 0 0 0 3px rgba(81, 28, 16, 0.2);
+        }
+        
+        .notification {
+            transform: translateY(-100%);
+            transition: transform 0.5s ease;
+        }
+        
+        .notification.show {
+            transform: translateY(0);
+        }
+        
+        .logo-container {
+            width: 120px;
+            height: 120px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .logo-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .anonymous-badge {
+            background-color: #f3f4f6;
+            border: 1px dashed #9ca3af;
+            color: #4b5563;
+            font-size: 0.875rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-[#F5F5F5] min-h-screen">
+    <!-- Notification -->
+    <div id="notification" class="notification fixed top-0 left-0 right-0 z-50 bg-green-500 text-white py-4 px-6 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <p class="font-medium" id="notification-text">การแจ้งเรื่องร้องเรียนของท่านได้รับการบันทึกเรียบร้อยแล้ว</p>
+            <button onclick="closeNotification()" class="text-white focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="banner text-white py-4 shadow-lg">
+        <div class="container mx-auto px-4 md:px-6 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="logo-container bg-white rounded-full p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#511C10" class="w-12 h-12">
+                        <path fill-rule="evenodd" d="M4.848 2.771A49.144 49.144 0 0112 2.25c2.43 0 4.817.178 7.152.52 1.978.292 3.348 2.024 3.348 3.97v6.02c0 1.946-1.37 3.678-3.348 3.97a48.901 48.901 0 01-3.476.383.39.39 0 00-.297.17l-2.755 4.133a.75.75 0 01-1.248 0l-2.755-4.133a.39.39 0 00-.297-.17 48.9 48.9 0 01-3.476-.384c-1.978-.29-3.348-2.024-3.348-3.97V6.741c0-1.946 1.37-3.68 3.348-3.97z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold">ระบบแจ้งเรื่องร้องเรียน</h1>
+                    <p class="text-sm md:text-base opacity-80">สำนักงานเขตพื้นที่การศึกษา</p>
+                </div>
+            </div>
+            <div class="hidden md:block">
+                <div class="flex items-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 100-12 6 6 0 000 12zm1-6a1 1 0 11-2 0 1 1 0 012 0zm-1-4a1 1 0 00-1 1v3a1 1 0 002 0V7a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    <span>ติดต่อสอบถาม: 02-123-4567</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 md:px-6 py-8">
+        <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6 md:p-8">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">แบบฟอร์มแจ้งเรื่องร้องเรียน</h2>
+                <p class="text-gray-600">ท่านสามารถแจ้งเรื่องร้องเรียนโดยไม่ระบุตัวตนได้</p>
+                
+                <div class="mt-4 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-blue-700">
+                                ระบบนี้รองรับการแจ้งเรื่องร้องเรียนแบบไม่ระบุตัวตน ท่านสามารถแจ้งเรื่องร้องเรียนได้โดยไม่ต้องระบุข้อมูลส่วนตัวใดๆ
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Container -->
+            <form id="complaint-form" class="space-y-6">
+                <!-- Complaint Details -->
+                <div class="space-y-6">
+                    <div>
+                        <label for="complaint_title" class="block text-sm font-medium text-gray-700 mb-1">หัวข้อเรื่องร้องเรียน <span class="text-red-500">*</span></label>
+                        <input type="text" id="complaint_title" name="complaint_title" required class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none">
+                    </div>
+                    
+                    <div>
+                        <label for="complaint_detail" class="block text-sm font-medium text-gray-700 mb-1">รายละเอียดเรื่องร้องเรียน <span class="text-red-500">*</span></label>
+                        <textarea id="complaint_detail" name="complaint_detail" rows="6" required class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label for="location" class="block text-sm font-medium text-gray-700 mb-1">สถานที่เกิดเหตุ (ถ้ามี)</label>
+                        <input type="text" id="location" name="location" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none">
+                    </div>
+                    
+                    <div>
+                        <label for="date_incident" class="block text-sm font-medium text-gray-700 mb-1">วันที่เกิดเหตุ (ถ้ามี)</label>
+                        <input type="date" id="date_incident" name="date_incident" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none">
+                    </div>
+                </div>
+                
+                <!-- Optional Contact Information -->
+                <div class="border-t border-gray-200 pt-6 mt-6">
+                    <h3 class="text-lg font-medium text-gray-800 mb-4">ข้อมูลการติดต่อ (ไม่บังคับ)</h3>
+                    
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-yellow-700">
+                                    ข้อมูลส่วนนี้ไม่บังคับกรอก หากท่านไม่ต้องการระบุตัวตน สามารถเว้นว่างได้
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="fullname" class="block text-sm font-medium text-gray-700 mb-1">ชื่อ-นามสกุล</label>
+                            <input type="text" id="fullname" name="fullname" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none">
+                        </div>
+                        
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">เบอร์โทรศัพท์</label>
+                            <input type="tel" id="phone" name="phone" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none">
+                        </div>
+                        
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">อีเมล</label>
+                            <input type="email" id="email" name="email" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none">
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label for="address" class="block text-sm font-medium text-gray-700 mb-1">ที่อยู่</label>
+                            <textarea id="address" name="address" rows="3" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <div class="flex items-start mb-4">
+                        <div class="flex items-center h-5">
+                            <input id="terms" name="terms" type="checkbox" required class="focus:ring-2 focus:ring-offset-2 focus:ring-[#511C10] h-4 w-4 text-[#511C10] border-gray-300 rounded">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="terms" class="font-medium text-gray-700">ข้าพเจ้าขอรับรองว่าข้อมูลดังกล่าวเป็นความจริงทุกประการ</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-end">
+                    <button type="submit" class="btn-primary px-6 py-2 rounded-md font-medium">ส่งเรื่องร้องเรียน</button>
+                </div>
+            </form>
+            
+            <!-- Success Message -->
+            <div id="success-message" class="success-message text-center py-8">
+                <div class="mb-6">
+                    <div class="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">ส่งเรื่องร้องเรียนสำเร็จ</h3>
+                <p class="text-gray-600 mb-2">เรื่องร้องเรียนของท่านได้รับการบันทึกเรียบร้อยแล้ว</p>
+                <p class="text-gray-600 mb-6">หมายเลขเรื่องร้องเรียน: <span id="complaint-id" class="font-bold text-[#511C10]"></span> <span id="anonymous-tag" class="anonymous-badge hidden">ไม่ระบุตัวตน</span></p>
+                <div>
+                    <button type="button" onclick="resetForm()" class="btn-primary px-6 py-2 rounded-md font-medium">กลับสู่หน้าแรก</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">ติดต่อเรา</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-start">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>09 รังสิต-นครนายก ถนน รังสิต - นครนายก ตำบล รังสิต อำเภอธัญบุรี ปทุมธานี 12110</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            <span>02 546 7184</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            <span>thanyatech.ac.th</span>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">ลิงก์ที่เกี่ยวข้อง</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-gray-300 transition">หน้าหลัก</a></li>
+                        <li><a href="#" class="hover:text-gray-300 transition">เกี่ยวกับเรา</a></li>
+                        <li><a href="#" class="hover:text-gray-300 transition">บริการ</a></li>
+                        <li><a href="#" class="hover:text-gray-300 transition">ติดต่อเรา</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">ติดตามเรา</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="bg-white text-gray-800 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-200 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-facebook" viewBox="0 0 16 16">
+                                <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="bg-white text-gray-800 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-200 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-twitter" viewBox="0 0 16 16">
+                                <path d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="bg-white text-gray-800 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-200 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-line" viewBox="0 0 16 16">
+                                <path d="M8 0c4.411 0 8 2.912 8 6.492 0 1.433-.555 2.723-1.715 3.994-1.678 1.932-5.431 4.285-6.285 4.645-.83.35-.734-.197-.696-.413l.003-.018.114-.685c.027-.204.055-.521-.026-.723-.09-.223-.444-.339-.704-.395C2.846 12.39 0 9.701 0 6.492 0 2.912 3.59 0 8 0ZM5.022 7.686H3.497V4.918a.156.156 0 0 0-.155-.156H2.78a.156.156 0 0 0-.156.156v3.486c0 .041.017.08.044.107v.001l.002.002.002.002a.154.154 0 0 0 .108.043h2.242c.086 0 .155-.07.155-.156v-.56a.156.156 0 0 0-.155-.157Zm.791-2.924a.156.156 0 0 0-.156.156v3.486c0 .086.07.155.156.155h.562c.086 0 .155-.07.155-.155V4.918a.156.156 0 0 0-.155-.156h-.562Zm3.863 0a.156.156 0 0 0-.156.156v2.07L7.923 4.832a.17.17 0 0 0-.013-.015v-.001a.139.139 0 0 0-.01-.01l-.003-.003a.092.092 0 0 0-.011-.009h-.001L7.88 4.79l-.003-.002a.029.029 0 0 0-.005-.003l-.008-.005h-.002l-.003-.002-.01-.004-.004-.002a.093.093 0 0 0-.01-.003h-.002l-.003-.001-.009-.002h-.006l-.003-.001h-.004l-.002-.001h-.574a.156.156 0 0 0-.156.155v3.486c0 .086.07.155.156.155h.56c.087 0 .157-.07.157-.155v-2.07l1.6 2.16a.154.154 0 0 0 .039.038l.001.001.01.006.004.002a.066.066 0 0 0 .008.004l.007.003.005.002a.168.168 0 0 0 .01.003h.003a.155.155 0 0 0 .04.006h.56c.087 0 .157-.07.157-.155V4.918a.156.156 0 0 0-.156-.156h-.561Zm3.815.717v-.56a.156.156 0 0 0-.155-.157h-2.242a.155.155 0 0 0-.108.044h-.001l-.001.002-.002.003a.155.155 0 0 0-.044.107v3.486c0 .041.017.08.044.107l.002.003.002.002a.155.155 0 0 0 .108.043h2.242c.086 0 .155-.07.155-.156v-.56a.156.156 0 0 0-.155-.157H11.81v-.589h1.525c.086 0 .155-.07.155-.156v-.56a.156.156 0 0 0-.155-.157H11.81v-.589h1.525c.086 0 .155-.07.155-.156Z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-sm">
+                <p>&copy; 2025 ระบบแจ้งเรื่องร้องเรียน. สงวนลิขสิทธิ์.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Function to validate form
+        function validateForm() {
+            let isValid = true;
+            
+            // Validate required fields
+            const requiredFields = ['complaint_title', 'complaint_detail'];
+            
+            requiredFields.forEach(field => {
+                const input = document.getElementById(field);
+                if (!input.value.trim()) {
+                    input.classList.add('border-red-500');
+                    isValid = false;
+                } else {
+                    input.classList.remove('border-red-500');
+                }
+            });
+            
+            // Validate terms checkbox
+            const termsCheckbox = document.getElementById('terms');
+            if (!termsCheckbox.checked) {
+                alert('กรุณายอมรับเงื่อนไขก่อนส่งเรื่องร้องเรียน');
+                isValid = false;
+            }
+            
+            if (!isValid && requiredFields.some(field => !document.getElementById(field).value.trim())) {
+                alert('กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง');
+            }
+            
+            return isValid;
+        }
+        
+        // Function to validate contact information
+        function validateContactInfo() {
+            let isValid = true;
+            
+            // Validate phone format if provided
+            const phone = document.getElementById('phone');
+            if (phone.value.trim() && !/^\d{9,10}$/.test(phone.value.trim().replace(/[- ]/g, ''))) {
+                phone.classList.add('border-red-500');
+                alert('กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง');
+                isValid = false;
+            }
+            
+            // Validate email format if provided
+            const email = document.getElementById('email');
+            if (email.value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
+                email.classList.add('border-red-500');
+                alert('กรุณากรอกอีเมลให้ถูกต้อง');
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+        
+        // Function to handle form submission
+        document.getElementById('complaint-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate form
+            if (!validateForm()) {
+                return;
+            }
+            
+            // Validate contact information if provided
+            if (!validateContactInfo()) {
+                return;
+            }
+            
+            // Check if submission is anonymous
+            const isAnonymous = !document.getElementById('fullname').value.trim() && 
+                               !document.getElementById('phone').value.trim() && 
+                               !document.getElementById('email').value.trim() && 
+                               !document.getElementById('address').value.trim();
+            
+            // Generate complaint ID
+            const complaintId = generateComplaintId();
+            document.getElementById('complaint-id').textContent = complaintId;
+            
+            // Show/hide anonymous tag
+            if (isAnonymous) {
+                document.getElementById('anonymous-tag').classList.remove('hidden');
+            } else {
+                document.getElementById('anonymous-tag').classList.add('hidden');
+            }
+            
+            // Hide form and show success message
+            document.getElementById('complaint-form').style.display = 'none';
+            document.getElementById('success-message').style.display = 'block';
+            
+            // Show notification
+            showNotification('การแจ้งเรื่องร้องเรียนของท่านได้รับการบันทึกเรียบร้อยแล้ว');
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        
+        // Function to generate complaint ID
+        function generateComplaintId() {
+            const date = new Date();
+            const year = date.getFullYear().toString().substr(-2);
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            
+            return `C${year}${month}${day}-${random}`;
+        }
+        
+        // Function to reset form
+        function resetForm() {
+            // Reset form fields
+            document.getElementById('complaint-form').reset();
+            
+            // Show form and hide success message
+            document.getElementById('complaint-form').style.display = 'block';
+            document.getElementById('success-message').style.display = 'none';
+            
+            // Remove any error styling
+            document.querySelectorAll('.form-input').forEach(input => {
+                input.classList.remove('border-red-500');
+            });
+        }
+        
+        // Function to show notification
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            document.getElementById('notification-text').textContent = message;
+            notification.classList.add('show');
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                closeNotification();
+            }, 5000);
+        }
+        
+        // Function to close notification
+        function closeNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.remove('show');
+        }
+        
+        // Add input event listeners to remove error styling when user types
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('border-red-500');
+            });
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9663a320476e7b52',t:'MTc1MzY5Nzk1Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
